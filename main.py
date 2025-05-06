@@ -51,6 +51,9 @@ class UrbanRoutesPage:
     # Locators for phone test
     phone_number_button = (By.CLASS_NAME, 'np-text')
     phone_number_input = (By.ID, 'phone')
+    phone_number_next_button = (By.XPATH, "//button[@class = 'button full' and text()='Siguiente']")
+    phone_number_code = (By.ID, 'code')
+    phone_number_code_confirm_button = (By.XPATH, "//button[@class = 'button full' and text()='Confirmar']")
 
     def __init__(self, driver):
         self.driver = driver
@@ -89,8 +92,16 @@ class UrbanRoutesPage:
         self.driver.find_element(*self.phone_number_input).send_keys(data.phone_number)
 
     def get_phone_number(self):
-        return self.driver.find_element(*self.phone_number_input).get_property('value')
+        return self.driver.find_element(*self.phone_number_button).text
 
+    def click_phone_next_button(self):
+        self.driver.find_element(*self.phone_number_next_button).click()
+
+    def set_phone_number_code(self, new_code):
+        self.driver.find_element(*self.phone_number_code).send_keys(new_code)
+
+    def click_phone_confirm_button(self):
+        self.driver.find_element(*self.phone_number_code_confirm_button).click()
 
 class TestUrbanRoutes:
 
@@ -138,7 +149,16 @@ class TestUrbanRoutes:
         routes_page.click_phone_number()
         WebDriverWait(self.driver, 3).until(expected_conditions.visibility_of_element_located(routes_page.phone_number_input))
         routes_page.set_phone_number()
-
+        routes_page.click_phone_next_button()
+        WebDriverWait(self.driver, 3).until(
+            expected_conditions.visibility_of_element_located(routes_page.phone_number_code))
+        code = retrieve_phone_code(self.driver)
+        routes_page.set_phone_number_code(code)
+        WebDriverWait(self.driver, 3).until(
+            expected_conditions.element_to_be_clickable(routes_page.phone_number_code_confirm_button))
+        routes_page.click_phone_confirm_button()
+        WebDriverWait(self.driver, 3).until(
+            expected_conditions.visibility_of_element_located(routes_page.phone_number_button))
         assert data.phone_number == routes_page.get_phone_number(), "Phone number does not match"
 
     @classmethod
