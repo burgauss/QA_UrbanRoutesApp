@@ -1,9 +1,12 @@
+import time
+
 import data
 from selenium import webdriver
 from selenium.webdriver import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.chrome.options import Options
 
 
 # no modificar
@@ -31,12 +34,13 @@ def retrieve_phone_code(driver) -> str:
         if not code:
             raise Exception("No se encontró el código de confirmación del teléfono.\n"
                             "Utiliza 'retrieve_phone_code' solo después de haber solicitado el código en tu aplicación.")
-        return code
+    return code
 
 
 class UrbanRoutesPage:
     from_field = (By.ID, 'from')
     to_field = (By.ID, 'to')
+    call_a_taxi_button = (By.XPATH, "//div[@class='results-text']//button[@type='button']")
 
     def __init__(self, driver):
         self.driver = driver
@@ -53,6 +57,13 @@ class UrbanRoutesPage:
     def get_to(self):
         return self.driver.find_element(*self.to_field).get_property('value')
 
+    def click_call_a_taxi_button(self):
+        self.driver.find_element(*self.call_a_taxi_button).click()
+
+    def set_route(self, address_from, adress_to):
+        self.set_from(address_from)
+        self.set_to(adress_to)
+
 
 
 class TestUrbanRoutes:
@@ -62,13 +73,22 @@ class TestUrbanRoutes:
     @classmethod
     def setup_class(cls):
         # no lo modifiques, ya que necesitamos un registro adicional habilitado para recuperar el código de confirmación del teléfono
-        from selenium.webdriver import DesiredCapabilities
-        capabilities = DesiredCapabilities.CHROME
-        capabilities["goog:loggingPrefs"] = {'performance': 'ALL'}
-        cls.driver = webdriver.Chrome(desired_capabilities=capabilities)
+        options = Options()
+        options.set_capability("goog:loggingPrefs", {'performance': 'ALL'})
+        cls.driver = webdriver.Chrome(options=options)
+        # from selenium.webdriver import DesiredCapabilities
+        # capabilities = DesiredCapabilities.CHROME
+        # capabilities["goog:loggingPrefs"] = {'performance': 'ALL'}
+        # cls.driver = webdriver.Chrome(desired_capabilities=capabilities)
 
     def test_set_route(self):
         self.driver.get(data.urban_routes_url)
+        WebDriverWait(self.driver, 10).until(
+            expected_conditions.element_to_be_clickable((By.ID, "from"))
+        )
+        WebDriverWait(self.driver, 10).until(
+            expected_conditions.element_to_be_clickable((By.ID, "to"))
+        )
         routes_page = UrbanRoutesPage(self.driver)
         address_from = data.address_from
         address_to = data.address_to
@@ -76,6 +96,18 @@ class TestUrbanRoutes:
         assert routes_page.get_from() == address_from
         assert routes_page.get_to() == address_to
 
+    def test_select_comfort(self):
+        tariff_picker = (By.CLASS_NAME, 'tariff-picker')
+        comfort_card = (By.XPATH, "//div[@class='tcard-title' and text()='Comfort']")
+
+        # self.driver.get(data.urban_routes_url)
+        routes_page = UrbanRoutesPage(self.driver)
+        # WebDriverWait(self.driver, 3).until(expected_conditions.element_to_be_clickable(*tariff_picker))
+        time.sleep(3)
+        routes_page.click_call_a_taxi_button()
+        WebDriverWait(self.driver, 3).until(expected_conditions.visibility_of_element_located(tariff_picker))
+        # self.driver.find_element(*comfort_card).click()
+        assert 1==1
 
     @classmethod
     def teardown_class(cls):
