@@ -1,6 +1,7 @@
 import time
 
 import data
+import utils
 from selenium import webdriver
 from selenium.webdriver import Keys
 from selenium.webdriver.common.by import By
@@ -40,7 +41,12 @@ def retrieve_phone_code(driver) -> str:
 class UrbanRoutesPage:
     from_field = (By.ID, 'from')
     to_field = (By.ID, 'to')
+
+    # Locator for the Test Select Comfort
     call_a_taxi_button = (By.XPATH, "//div[@class='results-text']//button[@type='button']")
+    type_picker = (By.CLASS_NAME, 'type-picker')
+    tariff_picker = (By.CLASS_NAME, 'tariff-picker')
+    comfort_card = (By.XPATH, "//div[@class='tcard-title' and text()='Comfort']")
 
     def __init__(self, driver):
         self.driver = driver
@@ -57,12 +63,20 @@ class UrbanRoutesPage:
     def get_to(self):
         return self.driver.find_element(*self.to_field).get_property('value')
 
-    def click_call_a_taxi_button(self):
-        self.driver.find_element(*self.call_a_taxi_button).click()
-
     def set_route(self, address_from, adress_to):
         self.set_from(address_from)
         self.set_to(adress_to)
+
+    #Functions related to the Test Select Comfort
+    def click_call_a_taxi_button(self):
+        self.driver.find_element(*self.call_a_taxi_button).click()
+
+    def click_comfort_tarif_card(self):
+        self.driver.find_element(*self.comfort_card).click()
+
+    def get_selected_tarif_card(self):
+        return self.driver.find_element(*self.comfort_card).text
+
 
 
 
@@ -97,17 +111,14 @@ class TestUrbanRoutes:
         assert routes_page.get_to() == address_to
 
     def test_select_comfort(self):
-        tariff_picker = (By.CLASS_NAME, 'tariff-picker')
-        comfort_card = (By.XPATH, "//div[@class='tcard-title' and text()='Comfort']")
-
-        # self.driver.get(data.urban_routes_url)
         routes_page = UrbanRoutesPage(self.driver)
-        # WebDriverWait(self.driver, 3).until(expected_conditions.element_to_be_clickable(*tariff_picker))
-        time.sleep(3)
+        # routes_page.wait_element_to_be_clickable(routes_page.tariff_picker)
+        WebDriverWait(self.driver, 3).until(expected_conditions.element_to_be_clickable(routes_page.type_picker))
         routes_page.click_call_a_taxi_button()
-        WebDriverWait(self.driver, 3).until(expected_conditions.visibility_of_element_located(tariff_picker))
-        # self.driver.find_element(*comfort_card).click()
-        assert 1==1
+        WebDriverWait(self.driver, 3).until(expected_conditions.visibility_of_element_located(routes_page.tariff_picker))
+        routes_page.click_comfort_tarif_card()
+        selected_tarif = routes_page.get_selected_tarif_card()
+        assert "Comfort" == selected_tarif, "The tarif selected is not comfort"
 
     @classmethod
     def teardown_class(cls):
