@@ -48,6 +48,10 @@ class UrbanRoutesPage:
     tariff_picker = (By.CLASS_NAME, 'tariff-picker')
     comfort_card = (By.XPATH, "//div[@class='tcard-title' and text()='Comfort']")
 
+    # Locators for phone test
+    phone_number_button = (By.CLASS_NAME, 'np-text')
+    phone_number_input = (By.ID, 'phone')
+
     def __init__(self, driver):
         self.driver = driver
 
@@ -77,7 +81,15 @@ class UrbanRoutesPage:
     def get_selected_tarif_card(self):
         return self.driver.find_element(*self.comfort_card).text
 
+    #Function related to the phone test
+    def click_phone_number(self):#
+        self.driver.find_element(*self.phone_number_button).click()
 
+    def set_phone_number(self):
+        self.driver.find_element(*self.phone_number_input).send_keys(data.phone_number)
+
+    def get_phone_number(self):
+        return self.driver.find_element(*self.phone_number_input).get_property('value')
 
 
 class TestUrbanRoutes:
@@ -119,6 +131,15 @@ class TestUrbanRoutes:
         routes_page.click_comfort_tarif_card()
         selected_tarif = routes_page.get_selected_tarif_card()
         assert "Comfort" == selected_tarif, "The tarif selected is not comfort"
+
+    def test_fill_phone_number(self):
+        routes_page = UrbanRoutesPage(self.driver)
+        WebDriverWait(self.driver, 3).until(expected_conditions.visibility_of_element_located(routes_page.phone_number_button))
+        routes_page.click_phone_number()
+        WebDriverWait(self.driver, 3).until(expected_conditions.visibility_of_element_located(routes_page.phone_number_input))
+        routes_page.set_phone_number()
+
+        assert data.phone_number == routes_page.get_phone_number(), "Phone number does not match"
 
     @classmethod
     def teardown_class(cls):
