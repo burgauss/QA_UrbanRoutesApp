@@ -60,6 +60,8 @@ class UrbanRoutesPage:
     credit_card_add_selector = (By.XPATH, "//div[@class ='pp-row disabled']")
     credit_card_number = (By.ID, 'number')
     credit_card_code = (By.XPATH, "//div[@class='card-code-input']/input")
+    credit_card_add_button = (By.XPATH, "//button[@class='button full' and text()='Agregar']")
+    credit_card_form_close_button = (By.XPATH, "//div[@class = 'head' and text()='Método de pago']/parent::div//button")
 
     def __init__(self, driver):
         self.driver = driver
@@ -115,6 +117,16 @@ class UrbanRoutesPage:
 
     def click_credit_card_add_selector(self):
         self.driver.find_element(*self.credit_card_add_selector).click()
+
+    def set_credit_card_number(self):
+        self.driver.find_element(*self.credit_card_number).send_keys(data.card_number)
+
+    def set_credit_card_code(self):
+        self.driver.find_element(*self.credit_card_code).send_keys(data.card_code)
+        self.driver.find_element(*self.credit_card_code).send_keys(Keys.TAB)
+
+    def click_credit_card_add_button(self):
+        self.driver.find_element(*self.credit_card_add_button).click()
 
 class TestUrbanRoutes:
 
@@ -190,6 +202,14 @@ class TestUrbanRoutes:
         routes_page.click_credit_card_add_selector()
 
         WebDriverWait(self.driver, 3).until(expected_conditions.element_to_be_clickable(routes_page.credit_card_number))
+        routes_page.set_credit_card_number()
+        routes_page.set_credit_card_code()
+
+        WebDriverWait(self.driver, 3).until(expected_conditions.element_to_be_clickable(routes_page.credit_card_add_button))
+        routes_page.click_credit_card_add_button()
+
+        WebDriverWait(self.driver, 3).until(
+            expected_conditions.element_to_be_clickable(routes_page.credit_card_form_close_button))
 
         time.sleep(3)
 
