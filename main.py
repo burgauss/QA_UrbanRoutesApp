@@ -55,6 +55,12 @@ class UrbanRoutesPage:
     phone_number_code = (By.ID, 'code')
     phone_number_code_confirm_button = (By.XPATH, "//button[@class = 'button full' and text()='Confirmar']")
 
+    # Locators for credit card test
+    credit_card_button = (By.XPATH, "//div[@class='pp-button filled']")
+    credit_card_add_selector = (By.XPATH, "//div[@class ='pp-row disabled']")
+    credit_card_number = (By.ID, 'number')
+    credit_card_code = (By.XPATH, "//div[@class='card-code-input']/input")
+
     def __init__(self, driver):
         self.driver = driver
 
@@ -103,6 +109,13 @@ class UrbanRoutesPage:
     def click_phone_confirm_button(self):
         self.driver.find_element(*self.phone_number_code_confirm_button).click()
 
+    # Functions for the credit card test
+    def click_credit_card_button(self):
+        self.driver.find_element(*self.credit_card_button).click()
+
+    def click_credit_card_add_selector(self):
+        self.driver.find_element(*self.credit_card_add_selector).click()
+
 class TestUrbanRoutes:
 
     driver = None
@@ -143,23 +156,42 @@ class TestUrbanRoutes:
         selected_tarif = routes_page.get_selected_tarif_card()
         assert "Comfort" == selected_tarif, "The tarif selected is not comfort"
 
-    def test_fill_phone_number(self):
+    def test_set_phone_number(self):
         routes_page = UrbanRoutesPage(self.driver)
+
         WebDriverWait(self.driver, 3).until(expected_conditions.visibility_of_element_located(routes_page.phone_number_button))
         routes_page.click_phone_number()
+
         WebDriverWait(self.driver, 3).until(expected_conditions.visibility_of_element_located(routes_page.phone_number_input))
         routes_page.set_phone_number()
         routes_page.click_phone_next_button()
+
         WebDriverWait(self.driver, 3).until(
             expected_conditions.visibility_of_element_located(routes_page.phone_number_code))
         code = retrieve_phone_code(self.driver)
         routes_page.set_phone_number_code(code)
+
         WebDriverWait(self.driver, 3).until(
             expected_conditions.element_to_be_clickable(routes_page.phone_number_code_confirm_button))
         routes_page.click_phone_confirm_button()
+
         WebDriverWait(self.driver, 3).until(
             expected_conditions.visibility_of_element_located(routes_page.phone_number_button))
         assert data.phone_number == routes_page.get_phone_number(), "Phone number does not match"
+
+    def test_set_credit_card(self):
+        routes_page = UrbanRoutesPage(self.driver)
+
+        WebDriverWait(self.driver, 3).until(
+            expected_conditions.visibility_of_element_located(routes_page.credit_card_button))
+        routes_page.click_credit_card_button()
+
+        WebDriverWait(self.driver, 3).until(expected_conditions.element_to_be_clickable(routes_page.credit_card_add_selector))
+        routes_page.click_credit_card_add_selector()
+
+        WebDriverWait(self.driver, 3).until(expected_conditions.element_to_be_clickable(routes_page.credit_card_number))
+
+        time.sleep(3)
 
     @classmethod
     def teardown_class(cls):
