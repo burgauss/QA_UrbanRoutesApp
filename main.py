@@ -62,6 +62,15 @@ class UrbanRoutesPage:
     credit_card_code = (By.XPATH, "//div[@class='card-code-input']/input")
     credit_card_add_button = (By.XPATH, "//button[@class='button full' and text()='Agregar']")
     credit_card_form_close_button = (By.XPATH, "//div[@class = 'head' and text()='Método de pago']/parent::div//button")
+    credit_card_label_payment_method = (By.CLASS_NAME, 'pp-value-text')
+
+    #Locators for comment to driver test
+    comment_to_driver_input = (By.ID, 'comment')
+
+    #Locators for select blanked and napkin test
+    select_blanked_and_napkin_toogle = (By.XPATH, "//div[@class='r-sw-label' and text()='Manta y pañuelos']/following-sibling::div[@class='r-sw']")
+
+    select_blanked_and_napkin_toggle_for_info = (By.XPATH, "//div[@class='r-sw-label' and text()='Manta y pañuelos']/following-sibling::div[@class='r-sw']//input")
 
     def __init__(self, driver):
         self.driver = driver
@@ -127,6 +136,26 @@ class UrbanRoutesPage:
 
     def click_credit_card_add_button(self):
         self.driver.find_element(*self.credit_card_add_button).click()
+
+    def click_credit_card_form_close_button(self):
+        self.driver.find_element(*self.credit_card_form_close_button).click()
+
+    def get_credit_card_label_payment_method(self):
+        return self.driver.find_element(*self.credit_card_label_payment_method).text
+
+    #Functions related to the test for comment to driver
+    def set_comment_to_driver(self):
+        self.driver.find_element(*self.comment_to_driver_input).send_keys(data.message_for_driver)
+
+    def get_comment_to_driver(self):
+        return self.driver.find_element(*self.comment_to_driver_input).get_property('value')
+
+    #Functions related to the test for selecting blanket and napkin
+    def click_blanked_and_napkin_option(self):
+        self.driver.find_element(*self.select_blanked_and_napkin_toogle).click()
+
+    def get_is_blanked_and_napkin_active(self):
+        return self.driver.find_element(*self.select_blanked_and_napkin_toggle_for_info).is_selected()
 
 class TestUrbanRoutes:
 
@@ -211,7 +240,28 @@ class TestUrbanRoutes:
         WebDriverWait(self.driver, 3).until(
             expected_conditions.element_to_be_clickable(routes_page.credit_card_form_close_button))
 
-        time.sleep(3)
+        routes_page.click_credit_card_form_close_button()
+
+        assert "Tarjeta" == routes_page.get_credit_card_label_payment_method(), "Tarjeta has not been selected"
+
+    def test_comment_to_driver(self):
+        routes_page = UrbanRoutesPage(self.driver)
+
+        WebDriverWait(self.driver,3).until(expected_conditions.element_to_be_clickable(routes_page.comment_to_driver_input))
+        routes_page.set_comment_to_driver()
+        time.sleep(1)
+        assert data.message_for_driver == routes_page.get_comment_to_driver()
+
+    def test_select_blanket_and_napkin(self):
+        routes_page = UrbanRoutesPage(self.driver)
+
+        WebDriverWait(self.driver, 3).until(
+            expected_conditions.element_to_be_clickable(routes_page.select_blanked_and_napkin_toogle))
+        routes_page.click_blanked_and_napkin_option()
+
+        assert True == routes_page.get_is_blanked_and_napkin_active()
+
+
 
     @classmethod
     def teardown_class(cls):
