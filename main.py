@@ -50,12 +50,14 @@ class UrbanRoutesPage:
     # Locators for phone test
     phone_number_button = (By.CLASS_NAME, 'np-text')
     phone_number_input = (By.ID, 'phone')
-    phone_number_next_button = (By.XPATH, "//button[@class = 'button full' and text()='Siguiente']")
+    # phone_number_next_button = (By.XPATH, "//button[@class = 'button full' and text()='Siguiente']")
+    phone_number_next_button = (By.CSS_SELECTOR, ".button.full")
     phone_number_code = (By.ID, 'code')
     phone_number_code_confirm_button = (By.XPATH, "//button[@class = 'button full' and text()='Confirmar']")
 
     # Locators for credit card test
-    credit_card_button = (By.XPATH, "//div[@class='pp-button filled']")
+    # credit_card_button = (By.XPATH, "//div[@class='pp-button filled']")
+    credit_card_button = (By.CSS_SELECTOR, ".pp-button")
     credit_card_add_selector = (By.XPATH, "//div[@class ='pp-row disabled']")
     credit_card_number = (By.ID, 'number')
     credit_card_code = (By.XPATH, "//div[@class='card-code-input']/input")
