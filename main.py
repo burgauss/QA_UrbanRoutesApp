@@ -72,6 +72,17 @@ class UrbanRoutesPage:
 
     select_blanked_and_napkin_toggle_for_info = (By.XPATH, "//div[@class='r-sw-label' and text()='Manta y pañuelos']/following-sibling::div[@class='r-sw']//input")
 
+    # Locators for setting two ice_cream test
+    two_ice_cream_couter_plus_button = (By.XPATH, "//div[text()='Helado']//following-sibling::div//div[@class='counter-plus']")
+
+    ice_cream_counter = (By.XPATH, "//div[text()='Helado']//following-sibling::div//div[@class='counter-value']")
+
+    #Locators for taxi modal test
+    button_request_taxi = (By.CLASS_NAME, 'smart-button')
+
+    modal = (By.XPATH, "//div[@class='order shown']")
+    modal_title = (By.CLASS_NAME, 'order-header-title')
+
     def __init__(self, driver):
         self.driver = driver
 
@@ -156,6 +167,25 @@ class UrbanRoutesPage:
 
     def get_is_blanked_and_napkin_active(self):
         return self.driver.find_element(*self.select_blanked_and_napkin_toggle_for_info).is_selected()
+
+    #Functions related to the two ice cream test
+    def rolldown(self, down_clicks):
+        for i in range(down_clicks):
+            self.driver.find_element(*self.tariff_picker).send_keys(Keys.ARROW_DOWN)
+
+    def click_ice_cream_counter_plus(self):
+        self.driver.find_element(*self.two_ice_cream_couter_plus_button).click()
+        self.driver.find_element(*self.two_ice_cream_couter_plus_button).click()
+
+    def get_ice_cream_counter(self):
+        return self.driver.find_element(*self.ice_cream_counter).text
+
+    # Functions related to the modal taxi test
+    def click_request_taxi_button(self):
+        self.driver.find_element(*self.button_request_taxi).click()
+
+    def get_modal_text(self):
+        return self.driver.find_element(*self.modal_title).text
 
 class TestUrbanRoutes:
 
@@ -261,7 +291,29 @@ class TestUrbanRoutes:
 
         assert True == routes_page.get_is_blanked_and_napkin_active()
 
+    def test_set_two_icecream(self):
+        routes_page = UrbanRoutesPage(self.driver)
 
+        WebDriverWait(self.driver, 3).until(
+            expected_conditions.element_to_be_clickable(routes_page.two_ice_cream_couter_plus_button))
+
+        routes_page.rolldown(6)
+
+        routes_page.click_ice_cream_counter_plus()
+
+        assert routes_page.get_ice_cream_counter() == '2'
+
+    def test_modal_taxi_appears(self):
+        routes_page = UrbanRoutesPage(self.driver)
+
+        WebDriverWait(self.driver, 3).until(
+            expected_conditions.element_to_be_clickable(routes_page.button_request_taxi))
+        routes_page.click_request_taxi_button()
+
+        WebDriverWait(self.driver, 3).until(expected_conditions.visibility_of_element_located(routes_page.modal))
+
+        assert ("Buscar automóvil") == routes_page.get_modal_text(), "modal did not open"
+        time.sleep(3)
 
     @classmethod
     def teardown_class(cls):
