@@ -18,7 +18,7 @@ This project test the well functioning of the Urban Routes Project, it test for 
 ---
 ## Dependecies
 This project use the following dependecies:
-- python 3.12
+- python 3.12.1
 - selenium
 - pytest
 ---
